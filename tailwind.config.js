@@ -5,7 +5,16 @@ module.exports = {
     "./public/index.html"
   ],
   theme: {
-    extend: {},
+    extend: {
+      colors: {
+        primary: '#4f46e5',
+        success: '#10b981',
+        danger: '#ef4444',
+        admin: '#9333ea'
+      }
+    },
   },
   plugins: [],
 }
+
+
