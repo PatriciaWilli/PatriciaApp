@@ -668,13 +668,18 @@ const EventManagerPWA = () => {
                     <tr>
                       <th className="px-4 py-3 text-left text-sm font-semibold sticky left-0 bg-gradient-to-r from-green-600 to-blue-700 z-10">Spieler</th>
                       {upcomingEvents.map(event => (
-                        <th key={event.id} className="px-4 py-3 text-center text-sm font-semibold min-w-[140px]">
+                        <th key={event.id} className="px-4 py-3 text-center text-sm font-semibold min-w-[160px]">
                           <div className="font-medium">{event.date}</div>
                           <div className="text-xs opacity-90 mt-1">{event.title}</div>
                           <div className="text-xs opacity-75">{event.timeFrom}</div>
-                          <div className="text-xs opacity-90 mt-1 flex items-center justify-center gap-1">
-                            <Users className="w-3 h-3" />
-                            <span>{acceptedCount(event)} + {guestCount(event)}</span>
+                          <div className="mt-2 pt-2 border-t border-white/30">
+                            <div className="text-xs opacity-90 flex items-center justify-center gap-1">
+                              <Check className="w-3 h-3" />
+                              <span>{acceptedCount(event)} Spieler + {guestCount(event)} Gäste</span>
+                            </div>
+                            <div className="text-sm font-bold mt-1">
+                              Total: {acceptedCount(event) + guestCount(event)} Personen
+                            </div>
                           </div>
                         </th>
                       ))}
@@ -1069,13 +1074,18 @@ const EventManagerPWA = () => {
                   <tr>
                     <th className="px-4 py-3 text-left text-sm font-semibold sticky left-0 bg-gradient-to-r from-purple-600 to-blue-700 z-10">Spieler</th>
                     {upcomingEvents.map(event => (
-                      <th key={event.id} className="px-4 py-3 text-center text-sm font-semibold min-w-[140px]">
+                      <th key={event.id} className="px-4 py-3 text-center text-sm font-semibold min-w-[160px]">
                         <div className="font-medium">{event.date}</div>
                         <div className="text-xs opacity-90 mt-1">{event.title}</div>
                         <div className="text-xs opacity-75">{event.timeFrom}</div>
-                        <div className="text-xs opacity-90 mt-1 flex items-center justify-center gap-1">
-                          <Users className="w-3 h-3" />
-                          <span>{acceptedCount(event)} + {guestCount(event)}</span>
+                        <div className="mt-2 pt-2 border-t border-white/30">
+                          <div className="text-xs opacity-90 flex items-center justify-center gap-1">
+                            <Check className="w-3 h-3" />
+                            <span>{acceptedCount(event)} Spieler + {guestCount(event)} Gäste</span>
+                          </div>
+                          <div className="text-sm font-bold mt-1">
+                            Total: {acceptedCount(event) + guestCount(event)} Personen
+                          </div>
                         </div>
                       </th>
                     ))}
