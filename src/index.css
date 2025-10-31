@@ -1,25 +1,41 @@
-import React from 'react';
-import ReactDOM from 'react-dom/client';
-import './index.css';
-import App from './App';
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
 
-const root = ReactDOM.createRoot(document.getElementById('root'));
-root.render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+/* Global Styles */
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
 
-// Service Worker Registration (für PWA)
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/service-worker.js')
-      .then(registration => {
-        console.log('✓ Service Worker registriert:', registration.scope);
-      })
-      .catch(error => {
-        console.log('✗ Service Worker Registrierung fehlgeschlagen:', error);
-      });
-  });
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
+    'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
+    sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+code {
+  font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
+    monospace;
+}
+
+/* Custom utility classes */
+.btn-primary {
+  @apply bg-indigo-600 text-white font-semibold py-2 px-4 rounded-lg hover:bg-indigo-700 transition-colors;
+}
+
+.btn-success {
+  @apply bg-green-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-green-600 transition-colors;
+}
+
+.btn-danger {
+  @apply bg-red-500 text-white font-semibold py-2 px-4 rounded-lg hover:bg-red-600 transition-colors;
+}
+
+.card {
+  @apply bg-white rounded-lg shadow-md p-6 hover:shadow-lg transition-shadow;
 }
