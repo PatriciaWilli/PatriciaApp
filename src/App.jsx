@@ -660,120 +660,196 @@ const EventManagerPWA = () => {
         {/* Content */}
         <div className="max-w-7xl mx-auto p-4">
           {userViewMode === 'grid' ? (
-            // Grid View - Übersicht (Spieler vertikal, Termine horizontal)
-            <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-              <div className="overflow-x-auto">
-                <table className="w-full">
-                  <thead className="bg-gradient-to-r from-green-600 to-blue-700 text-white">
-                    <tr>
-                      <th className="px-4 py-3 text-left text-sm font-semibold sticky left-0 bg-gradient-to-r from-green-600 to-blue-700 z-10">Spieler</th>
-                      {upcomingEvents.map(event => (
-                        <th key={event.id} className="px-4 py-3 text-center text-sm font-semibold min-w-[160px]">
-                          <div className="font-medium">{event.date}</div>
-                          <div className="text-xs opacity-90 mt-1">{event.title}</div>
-                          <div className="text-xs opacity-75">{event.timeFrom}</div>
-                          <div className="mt-2 pt-2 border-t border-white/30">
-                            <div className="text-xs opacity-90 flex items-center justify-center gap-1">
-                              <Check className="w-3 h-3" />
-                              <span>{acceptedCount(event)} Spieler + {guestCount(event)} Gäste</span>
+            // Grid View - Übersicht
+            <>
+              {/* Desktop/Tablet View - Tabelle */}
+              <div className="hidden md:block bg-white rounded-xl shadow-lg overflow-hidden">
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead className="bg-gradient-to-r from-green-600 to-blue-700 text-white">
+                      <tr>
+                        <th className="px-4 py-3 text-left text-sm font-semibold sticky left-0 bg-gradient-to-r from-green-600 to-blue-700 z-10">Spieler</th>
+                        {upcomingEvents.map(event => (
+                          <th key={event.id} className="px-4 py-3 text-center text-sm font-semibold min-w-[160px]">
+                            <div className="font-medium">{event.date}</div>
+                            <div className="text-xs opacity-90 mt-1">{event.title}</div>
+                            <div className="text-xs opacity-75">{event.timeFrom}</div>
+                            <div className="mt-2 pt-2 border-t border-white/30">
+                              <div className="text-xs opacity-90 flex items-center justify-center gap-1">
+                                <Check className="w-3 h-3" />
+                                <span>{acceptedCount(event)} Spieler + {guestCount(event)} Gäste</span>
+                              </div>
+                              <div className="text-sm font-bold mt-1">
+                                Total: {acceptedCount(event) + guestCount(event)} Personen
+                              </div>
                             </div>
-                            <div className="text-sm font-bold mt-1">
-                              Total: {acceptedCount(event) + guestCount(event)} Personen
+                          </th>
+                        ))}
+                      </tr>
+                    </thead>
+                    <tbody className="divide-y divide-gray-200">
+                      {users.filter(p => playerStates[p.id]).map(player => (
+                        <tr key={player.id} className="hover:bg-gray-50">
+                          <td className="px-4 py-3 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">
+                            {player.nickname}
+                          </td>
+                          {upcomingEvents.map(event => {
+                            const response = event.responses[player.id];
+                            return (
+                              <td key={event.id} className="px-4 py-3 text-center">
+                                <div className="flex flex-col items-center gap-1">
+                                  {response?.status === 'accepted' ? (
+                                    <>
+                                      <div className="inline-flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
+                                        <Check className="w-5 h-5 text-green-600" />
+                                      </div>
+                                      {response.guests > 0 && (
+                                        <span className="text-xs text-gray-600 font-medium">+{response.guests}</span>
+                                      )}
+                                      {response.items && response.items.length > 0 && (
+                                        <div className="flex gap-0.5 flex-wrap justify-center">
+                                          {response.items.map(itemId => {
+                                            const item = utensils.find(u => u.id === itemId);
+                                            return item ? (
+                                              <span key={itemId} className="text-lg" title={item.name}>
+                                                {item.icon}
+                                              </span>
+                                            ) : null;
+                                          })}
+                                        </div>
+                                      )}
+                                      {response.comment && (
+                                        <div className="relative">
+                                          <button
+                                            onMouseEnter={() => setShowCommentTooltip(`${event.id}-${player.id}`)}
+                                            onMouseLeave={() => setShowCommentTooltip(null)}
+                                            className="p-1 hover:bg-gray-100 rounded"
+                                          >
+                                            <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
+                                          </button>
+                                          {showCommentTooltip === `${event.id}-${player.id}` && (
+                                            <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
+                                              {response.comment}
+                                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                <div className="border-4 border-transparent border-t-gray-900"></div>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </>
+                                  ) : response?.status === 'declined' ? (
+                                    <>
+                                      <div className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full">
+                                        <X className="w-5 h-5 text-red-600" />
+                                      </div>
+                                      {response.comment && (
+                                        <div className="relative">
+                                          <button
+                                            onMouseEnter={() => setShowCommentTooltip(`${event.id}-${player.id}`)}
+                                            onMouseLeave={() => setShowCommentTooltip(null)}
+                                            className="p-1 hover:bg-gray-100 rounded"
+                                          >
+                                            <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
+                                          </button>
+                                          {showCommentTooltip === `${event.id}-${player.id}` && (
+                                            <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
+                                              {response.comment}
+                                              <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                                <div className="border-4 border-transparent border-t-gray-900"></div>
+                                              </div>
+                                            </div>
+                                          )}
+                                        </div>
+                                      )}
+                                    </>
+                                  ) : (
+                                    <div className="text-gray-400">-</div>
+                                  )}
+                                </div>
+                              </td>
+                            );
+                          })}
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+
+              {/* Mobile View - Cards */}
+              <div className="md:hidden space-y-4">
+                {upcomingEvents.map(event => (
+                  <div key={event.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                    <div className="bg-gradient-to-r from-green-600 to-blue-700 text-white p-4">
+                      <div className="flex justify-between items-start">
+                        <div>
+                          <div className="font-bold text-lg">{event.date}</div>
+                          <div className="text-sm opacity-90">{event.title}</div>
+                          <div className="text-xs opacity-75 mt-1">{event.timeFrom} - {event.timeTo}</div>
+                        </div>
+                        <div className="text-right">
+                          <div className="text-xs opacity-90">
+                            <Check className="w-4 h-4 inline" /> {acceptedCount(event)} + {guestCount(event)}
+                          </div>
+                          <div className="text-sm font-bold mt-1">
+                            {acceptedCount(event) + guestCount(event)} Total
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                    <div className="p-4 space-y-3">
+                      {users.filter(p => playerStates[p.id]).map(player => {
+                        const response = event.responses[player.id];
+                        return (
+                          <div key={player.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                            <span className="font-medium text-gray-900">{player.nickname}</span>
+                            <div className="flex items-center gap-2">
+                              {response?.status === 'accepted' ? (
+                                <>
+                                  <div className="inline-flex items-center justify-center w-7 h-7 bg-green-100 rounded-full">
+                                    <Check className="w-4 h-4 text-green-600" />
+                                  </div>
+                                  {response.guests > 0 && (
+                                    <span className="text-xs text-gray-600 font-medium">+{response.guests}</span>
+                                  )}
+                                  {response.items && response.items.length > 0 && (
+                                    <div className="flex gap-0.5">
+                                      {response.items.map(itemId => {
+                                        const item = utensils.find(u => u.id === itemId);
+                                        return item ? (
+                                          <span key={itemId} className="text-base" title={item.name}>
+                                            {item.icon}
+                                          </span>
+                                        ) : null;
+                                      })}
+                                    </div>
+                                  )}
+                                  {response.comment && (
+                                    <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
+                                  )}
+                                </>
+                              ) : response?.status === 'declined' ? (
+                                <>
+                                  <div className="inline-flex items-center justify-center w-7 h-7 bg-red-100 rounded-full">
+                                    <X className="w-4 h-4 text-red-600" />
+                                  </div>
+                                  {response.comment && (
+                                    <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
+                                  )}
+                                </>
+                              ) : (
+                                <div className="text-gray-400 text-sm">-</div>
+                              )}
                             </div>
                           </div>
-                        </th>
-                      ))}
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {users.filter(p => playerStates[p.id]).map(player => (
-                      <tr key={player.id} className="hover:bg-gray-50">
-                        <td className="px-4 py-3 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">
-                          {player.nickname}
-                        </td>
-                        {upcomingEvents.map(event => {
-                          const response = event.responses[player.id];
-                          return (
-                            <td key={event.id} className="px-4 py-3 text-center">
-                              <div className="flex flex-col items-center gap-1">
-                                {response?.status === 'accepted' ? (
-                                  <>
-                                    <div className="inline-flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
-                                      <Check className="w-5 h-5 text-green-600" />
-                                    </div>
-                                    {response.guests > 0 && (
-                                      <span className="text-xs text-gray-600 font-medium">+{response.guests}</span>
-                                    )}
-                                    {response.items && response.items.length > 0 && (
-                                      <div className="flex gap-0.5 flex-wrap justify-center">
-                                        {response.items.map(itemId => {
-                                          const item = utensils.find(u => u.id === itemId);
-                                          return item ? (
-                                            <span key={itemId} className="text-lg" title={item.name}>
-                                              {item.icon}
-                                            </span>
-                                          ) : null;
-                                        })}
-                                      </div>
-                                    )}
-                                    {response.comment && (
-                                      <div className="relative">
-                                        <button
-                                          onMouseEnter={() => setShowCommentTooltip(`${event.id}-${player.id}`)}
-                                          onMouseLeave={() => setShowCommentTooltip(null)}
-                                          className="p-1 hover:bg-gray-100 rounded"
-                                        >
-                                          <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
-                                        </button>
-                                        {showCommentTooltip === `${event.id}-${player.id}` && (
-                                          <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
-                                            {response.comment}
-                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                                              <div className="border-4 border-transparent border-t-gray-900"></div>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </>
-                                ) : response?.status === 'declined' ? (
-                                  <>
-                                    <div className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full">
-                                      <X className="w-5 h-5 text-red-600" />
-                                    </div>
-                                    {response.comment && (
-                                      <div className="relative">
-                                        <button
-                                          onMouseEnter={() => setShowCommentTooltip(`${event.id}-${player.id}`)}
-                                          onMouseLeave={() => setShowCommentTooltip(null)}
-                                          className="p-1 hover:bg-gray-100 rounded"
-                                        >
-                                          <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
-                                        </button>
-                                        {showCommentTooltip === `${event.id}-${player.id}` && (
-                                          <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
-                                            {response.comment}
-                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                                              <div className="border-4 border-transparent border-t-gray-900"></div>
-                                            </div>
-                                          </div>
-                                        )}
-                                      </div>
-                                    )}
-                                  </>
-                                ) : (
-                                  <div className="text-gray-400">-</div>
-                                )}
-                              </div>
-                            </td>
-                          );
-                        })}
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
-            </div>
+            </>
           ) : (
             // Detail View
             <div className="space-y-4">
@@ -1062,124 +1138,205 @@ const EventManagerPWA = () => {
       {/* Content */}
       <div className="max-w-7xl mx-auto p-4">
         {view === 'admin' && (
-          <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-            <div className="p-6 bg-gradient-to-r from-purple-600 to-blue-700 text-white">
-              <h2 className="text-2xl font-bold">Event Übersicht</h2>
-              <p className="text-sm opacity-90 mt-1">Alle Events und Teilnehmer im Überblick</p>
-            </div>
-            
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead className="bg-gradient-to-r from-purple-600 to-blue-700 text-white">
-                  <tr>
-                    <th className="px-4 py-3 text-left text-sm font-semibold sticky left-0 bg-gradient-to-r from-purple-600 to-blue-700 z-10">Spieler</th>
-                    {upcomingEvents.map(event => (
-                      <th key={event.id} className="px-4 py-3 text-center text-sm font-semibold min-w-[160px]">
-                        <div className="font-medium">{event.date}</div>
-                        <div className="text-xs opacity-90 mt-1">{event.title}</div>
-                        <div className="text-xs opacity-75">{event.timeFrom}</div>
-                        <div className="mt-2 pt-2 border-t border-white/30">
-                          <div className="text-xs opacity-90 flex items-center justify-center gap-1">
-                            <Check className="w-3 h-3" />
-                            <span>{acceptedCount(event)} Spieler + {guestCount(event)} Gäste</span>
+          <>
+            {/* Desktop/Tablet View - Tabelle */}
+            <div className="hidden md:block bg-white rounded-xl shadow-lg overflow-hidden">
+              <div className="p-6 bg-gradient-to-r from-purple-600 to-blue-700 text-white">
+                <h2 className="text-2xl font-bold">Event Übersicht</h2>
+                <p className="text-sm opacity-90 mt-1">Alle Events und Teilnehmer im Überblick</p>
+              </div>
+              
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead className="bg-gradient-to-r from-purple-600 to-blue-700 text-white">
+                    <tr>
+                      <th className="px-4 py-3 text-left text-sm font-semibold sticky left-0 bg-gradient-to-r from-purple-600 to-blue-700 z-10">Spieler</th>
+                      {upcomingEvents.map(event => (
+                        <th key={event.id} className="px-4 py-3 text-center text-sm font-semibold min-w-[160px]">
+                          <div className="font-medium">{event.date}</div>
+                          <div className="text-xs opacity-90 mt-1">{event.title}</div>
+                          <div className="text-xs opacity-75">{event.timeFrom}</div>
+                          <div className="mt-2 pt-2 border-t border-white/30">
+                            <div className="text-xs opacity-90 flex items-center justify-center gap-1">
+                              <Check className="w-3 h-3" />
+                              <span>{acceptedCount(event)} Spieler + {guestCount(event)} Gäste</span>
+                            </div>
+                            <div className="text-sm font-bold mt-1">
+                              Total: {acceptedCount(event) + guestCount(event)} Personen
+                            </div>
                           </div>
-                          <div className="text-sm font-bold mt-1">
-                            Total: {acceptedCount(event) + guestCount(event)} Personen
+                        </th>
+                      ))}
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-200">
+                    {users.filter(p => playerStates[p.id]).map(player => (
+                      <tr key={player.id} className="hover:bg-gray-50">
+                        <td className="px-4 py-3 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">
+                          {player.nickname}
+                        </td>
+                        {upcomingEvents.map(event => {
+                          const response = event.responses[player.id];
+                          return (
+                            <td key={event.id} className="px-4 py-3 text-center">
+                              <div className="flex flex-col items-center gap-1">
+                                {response?.status === 'accepted' ? (
+                                  <>
+                                    <div className="inline-flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
+                                      <Check className="w-5 h-5 text-green-600" />
+                                    </div>
+                                    {response.guests > 0 && (
+                                      <span className="text-xs text-gray-600 font-medium">+{response.guests}</span>
+                                    )}
+                                    {response.items && response.items.length > 0 && (
+                                      <div className="flex gap-0.5 flex-wrap justify-center">
+                                        {response.items.map(itemId => {
+                                          const item = utensils.find(u => u.id === itemId);
+                                          return item ? (
+                                            <span key={itemId} className="text-lg" title={item.name}>
+                                              {item.icon}
+                                            </span>
+                                          ) : null;
+                                        })}
+                                      </div>
+                                    )}
+                                    {response.comment && (
+                                      <div className="relative">
+                                        <button
+                                          onMouseEnter={() => setShowCommentTooltip(`${event.id}-${player.id}`)}
+                                          onMouseLeave={() => setShowCommentTooltip(null)}
+                                          className="p-1 hover:bg-gray-100 rounded"
+                                        >
+                                          <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
+                                        </button>
+                                        {showCommentTooltip === `${event.id}-${player.id}` && (
+                                          <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
+                                            {response.comment}
+                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                              <div className="border-4 border-transparent border-t-gray-900"></div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </>
+                                ) : response?.status === 'declined' ? (
+                                  <>
+                                    <div className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full">
+                                      <X className="w-5 h-5 text-red-600" />
+                                    </div>
+                                    {response.comment && (
+                                      <div className="relative">
+                                        <button
+                                          onMouseEnter={() => setShowCommentTooltip(`${event.id}-${player.id}`)}
+                                          onMouseLeave={() => setShowCommentTooltip(null)}
+                                          className="p-1 hover:bg-gray-100 rounded"
+                                        >
+                                          <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
+                                        </button>
+                                        {showCommentTooltip === `${event.id}-${player.id}` && (
+                                          <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
+                                            {response.comment}
+                                            <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
+                                              <div className="border-4 border-transparent border-t-gray-900"></div>
+                                            </div>
+                                          </div>
+                                        )}
+                                      </div>
+                                    )}
+                                  </>
+                                ) : (
+                                  <div className="text-gray-400">-</div>
+                                )}
+                              </div>
+                            </td>
+                          );
+                        })}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+
+            {/* Mobile View - Cards */}
+            <div className="md:hidden space-y-4">
+              <div className="bg-gradient-to-r from-purple-600 to-blue-700 text-white p-4 rounded-xl shadow-lg">
+                <h2 className="text-xl font-bold">Event Übersicht</h2>
+                <p className="text-xs opacity-90 mt-1">Alle Events und Teilnehmer</p>
+              </div>
+
+              {upcomingEvents.map(event => (
+                <div key={event.id} className="bg-white rounded-xl shadow-lg overflow-hidden">
+                  <div className="bg-gradient-to-r from-purple-600 to-blue-700 text-white p-4">
+                    <div className="flex justify-between items-start">
+                      <div>
+                        <div className="font-bold text-lg">{event.date}</div>
+                        <div className="text-sm opacity-90">{event.title}</div>
+                        <div className="text-xs opacity-75 mt-1">{event.timeFrom} - {event.timeTo}</div>
+                      </div>
+                      <div className="text-right">
+                        <div className="text-xs opacity-90">
+                          <Check className="w-4 h-4 inline" /> {acceptedCount(event)} + {guestCount(event)}
+                        </div>
+                        <div className="text-sm font-bold mt-1">
+                          {acceptedCount(event) + guestCount(event)} Total
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                  <div className="p-4 space-y-3">
+                    {users.filter(p => playerStates[p.id]).map(player => {
+                      const response = event.responses[player.id];
+                      return (
+                        <div key={player.id} className="flex items-center justify-between py-2 border-b border-gray-100 last:border-0">
+                          <span className="font-medium text-gray-900">{player.nickname}</span>
+                          <div className="flex items-center gap-2">
+                            {response?.status === 'accepted' ? (
+                              <>
+                                <div className="inline-flex items-center justify-center w-7 h-7 bg-green-100 rounded-full">
+                                  <Check className="w-4 h-4 text-green-600" />
+                                </div>
+                                {response.guests > 0 && (
+                                  <span className="text-xs text-gray-600 font-medium">+{response.guests}</span>
+                                )}
+                                {response.items && response.items.length > 0 && (
+                                  <div className="flex gap-0.5">
+                                    {response.items.map(itemId => {
+                                      const item = utensils.find(u => u.id === itemId);
+                                      return item ? (
+                                        <span key={itemId} className="text-base" title={item.name}>
+                                          {item.icon}
+                                        </span>
+                                      ) : null;
+                                    })}
+                                  </div>
+                                )}
+                                {response.comment && (
+                                  <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
+                                )}
+                              </>
+                            ) : response?.status === 'declined' ? (
+                              <>
+                                <div className="inline-flex items-center justify-center w-7 h-7 bg-red-100 rounded-full">
+                                  <X className="w-4 h-4 text-red-600" />
+                                </div>
+                                {response.comment && (
+                                  <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
+                                )}
+                              </>
+                            ) : (
+                              <div className="text-gray-400 text-sm">-</div>
+                            )}
                           </div>
                         </div>
-                      </th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-gray-200">
-                  {users.filter(p => playerStates[p.id]).map(player => (
-                    <tr key={player.id} className="hover:bg-gray-50">
-                      <td className="px-4 py-3 text-sm font-medium text-gray-900 sticky left-0 bg-white z-10">
-                        {player.nickname}
-                      </td>
-                      {upcomingEvents.map(event => {
-                        const response = event.responses[player.id];
-                        return (
-                          <td key={event.id} className="px-4 py-3 text-center">
-                            <div className="flex flex-col items-center gap-1">
-                              {response?.status === 'accepted' ? (
-                                <>
-                                  <div className="inline-flex items-center justify-center w-8 h-8 bg-green-100 rounded-full">
-                                    <Check className="w-5 h-5 text-green-600" />
-                                  </div>
-                                  {response.guests > 0 && (
-                                    <span className="text-xs text-gray-600 font-medium">+{response.guests}</span>
-                                  )}
-                                  {response.items && response.items.length > 0 && (
-                                    <div className="flex gap-0.5 flex-wrap justify-center">
-                                      {response.items.map(itemId => {
-                                        const item = utensils.find(u => u.id === itemId);
-                                        return item ? (
-                                          <span key={itemId} className="text-lg" title={item.name}>
-                                            {item.icon}
-                                          </span>
-                                        ) : null;
-                                      })}
-                                    </div>
-                                  )}
-                                  {response.comment && (
-                                    <div className="relative">
-                                      <button
-                                        onMouseEnter={() => setShowCommentTooltip(`${event.id}-${player.id}`)}
-                                        onMouseLeave={() => setShowCommentTooltip(null)}
-                                        className="p-1 hover:bg-gray-100 rounded"
-                                      >
-                                        <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
-                                      </button>
-                                      {showCommentTooltip === `${event.id}-${player.id}` && (
-                                        <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
-                                          {response.comment}
-                                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                                            <div className="border-4 border-transparent border-t-gray-900"></div>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </>
-                              ) : response?.status === 'declined' ? (
-                                <>
-                                  <div className="inline-flex items-center justify-center w-8 h-8 bg-red-100 rounded-full">
-                                    <X className="w-5 h-5 text-red-600" />
-                                  </div>
-                                  {response.comment && (
-                                    <div className="relative">
-                                      <button
-                                        onMouseEnter={() => setShowCommentTooltip(`${event.id}-${player.id}`)}
-                                        onMouseLeave={() => setShowCommentTooltip(null)}
-                                        className="p-1 hover:bg-gray-100 rounded"
-                                      >
-                                        <MessageSquare className="w-4 h-4 text-blue-500 fill-blue-100" />
-                                      </button>
-                                      {showCommentTooltip === `${event.id}-${player.id}` && (
-                                        <div className="absolute z-50 bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-900 text-white text-xs rounded-lg shadow-lg whitespace-nowrap max-w-xs">
-                                          {response.comment}
-                                          <div className="absolute top-full left-1/2 transform -translate-x-1/2 -mt-1">
-                                            <div className="border-4 border-transparent border-t-gray-900"></div>
-                                          </div>
-                                        </div>
-                                      )}
-                                    </div>
-                                  )}
-                                </>
-                              ) : (
-                                <div className="text-gray-400">-</div>
-                              )}
-                            </div>
-                          </td>
-                        );
-                      })}
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+                      );
+                    })}
+                  </div>
+                </div>
+              ))}
             </div>
-          </div>
+          </>
         )}
 
         {view === 'admin-users' && (
